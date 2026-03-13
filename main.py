@@ -9,36 +9,16 @@
 # %  modulo
 # Includes input validation and error handling.
 
-def add(a, b):
-    return a + b
+import json
 
-def sub(a, b):
-    return a - b
+def add(a, b):     return a + b
+def sub(a, b):     return a - b
+def mul(a, b):     return a * b
+def div(a, b):     return a / b if b != 0 else "Cannot divide by zero"
+def power(a, b):   return a ** b 
+def fl_div(a, b):  return a // b if b != 0 else "Cannot be divided by zero!"   
+def mod (a, b):    return a % b if b != 0 else "Cannot be divided by zero!"
 
-def mul(a, b):
-    return a * b
-
-def div(a, b):
-    if b != 0:
-        return a / b
-    else:
-        return "Cannot be divided by zero!"
-
-def power(a, b):
-    return a ** b 
-
-def fl_div(a, b):
-    if b != 0:
-        return a // b
-    else:
-        return "Cannot be divided by zero!"
-    
-def mod (a, b):
-    if b != 0:
-        return a % b
-    else:
-        return "Cannot be divided by zero!"
-        
 operations = {
     '+': add,
     '-': sub,
@@ -49,36 +29,66 @@ operations = {
     '%': mod
 }
 
+History_file = "calculator_history.json"
+
+def load_history():
+    try:
+        with open(History_file, "r" , encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def save_history(history):
+    try:        
+        with open(History_file, "w", encoding="utf-8") as file:
+            json.dump(history, file, ensure_ascii=False, indent=2)
+            print(f"History saved to ({len(history)}) tasks")
+    except Exception as e:
+        print(f"Error saving history: {e}")
+    
+def show_history(history):
+    if not history:
+        print("No history found")
+        return
+    print("\n History:")
+    for i, entry in enumerate(history,1):
+        print(f"{i}. {entry}")
+
 def calculator():
-    print("Function: +, -, *, /, **, //, %, ex - exit\n ")
+    history = load_history()   
+    print("Calculator  (supported operations: + - * / // ** %)")
+    print("Commands:  s / save  → save history")
+    print("   h / history → show history")
+    print("   ex / exit   → exit\n")
      
     while True:
-        try:
-            num1 = float(input("Enter the first number: "))
-        except ValueError:
-            print("Please enter valid numbers!\n")
+        action = input("Operation:(+ - * / // ** % or h/s/ex ): ").strip().lower()
+        if action in ("ex", "exit"):
+            print("Good bye!")
+            break
+        
+        if action in ("h", "history"):
+            show_history(history)
             continue
         
-        try:
-            action = input("Function (+ - * / ** // %  ex ): ").strip()
-        except ValueError:
-            print("Please enter a valid operation!\n")
+        if action in ("s", "save"):
+            save_history(history)
             continue
-
-        if action.lower() in ("ex" , "exit"):
-            print("Bye bye")
-            break
-
+        
+        if action not in operations:
+            print("Invalid operation. Please try again.")
+            continue 
+        
         try:
-            num2 = float(input("Enter second number: "))
+            a = float(input("Enter first number: "))
+            b = float(input("Enter second number: "))
         except ValueError:
-            print("Please enter valid numbers!\n")
+            print("Invalid input. Please enter numeric values.")   
             continue
-
-        if action in operations:
-            result = operations[action](num1, num2)
-            print(f"Result: {result}\n")
-        else:
-            print("You chose wrong")
+        result = operations[action](a, b)
+        entry = f"{a} {action} {b} = {result}"
+        history.append(entry)
+        print(f"Result: {result}\n")
+                
 if __name__ == "__main__":    
     calculator() 
